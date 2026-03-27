@@ -1,0 +1,108 @@
+import 'package:flutter/material.dart';
+import 'package:video_player/video_player.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+
+void main() => runApp(MaterialApp(home: TVEDGospel()));
+
+class TVEDGospel extends StatefulWidget {
+  @override
+  _TVEDGospelState createState() => _TVEDGospelState();
+}
+
+class _TVEDGospelState extends State<TVEDGospel> {
+  late VideoPlayerController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    // Substitua pela URL do seu streaming real (HLS/m3u8)
+    _controller = VideoPlayerController.network(
+        'https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4')
+      ..initialize().then((_) {
+        setState(() {}); // Atualiza a tela quando o vídeo carregar
+      });
+  }
+
+  void _compartilhar() {
+    Share.share('Assista agora à TV ED Gospel! Acompanhe a palavra de Deus ao vivo: [SEU_LINK_AQUI]');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        title: Text("TV ED GOSPEL"),
+        backgroundColor: Colors.blueAccent[700],
+        centerTitle: true,
+      ),
+      body: Column(
+        children: [
+          // Área do Player de Vídeo
+          AspectRatio(
+            aspectRatio: 16 / 9,
+            child: _controller.value.isInitialized
+                ? Stack(
+                    alignment: Alignment.bottomCenter,
+                    children: [
+                      VideoPlayer(_controller),
+                      VideoProgressIndicator(_controller, allowScrubbing: true),
+                    ],
+                  )
+                : Center(child: CircularProgressIndicator()),
+          ),
+
+          // Controles de Funcionalidade
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildIconButton(Icons.play_arrow, "Play", () => _controller.play()),
+                _buildIconButton(Icons.pause, "Pausar", () => _controller.pause()),
+                _buildIconButton(Icons.share, "Partilhar", _compartilhar),
+                _buildIconButton(Icons.cast, "Cast", () {}), // Funcionalidade de TV
+              ],
+            ),
+          ),
+
+          Divider(color: Colors.white24),
+
+          // Grade de Programação Simples
+          Expanded(
+            child: ListView(
+              children: [
+                ListTile(
+                  leading: Icon(Icons.live_tv, color: Colors.red),
+                  title: Text("AO VIVO: Culto de Celebração", style: TextStyle(color: Colors.white)),
+                  subtitle: Text("Agora - 19:30h", style: TextStyle(color: Colors.white70)),
+                ),
+                ListTile(
+                  leading: Icon(Icons.schedule, color: Colors.blue),
+                  title: Text("Próximo: Momento de Oração", style: TextStyle(color: Colors.white)),
+                  subtitle: Text("Em breve - 21:00h", style: TextStyle(color: Colors.white70)),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildIconButton(IconData icon, String label, VoidCallback onPress) {
+    return Column(
+      children: [
+        IconButton(icon: Icon(icon, color: Colors.white, size: 30), onPressed: onPress),
+        Text(label, style: TextStyle(color: Colors.white, fontSize: 12)),
+      ],
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+}
